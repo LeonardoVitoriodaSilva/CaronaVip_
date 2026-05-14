@@ -1,0 +1,252 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── USUÁRIOS ──────────────────────────────────────────────────────
+model Usuario {
+  id            String      @id @default(uuid())
+  nome          String
+  email         String      @unique
+  telefone      String      @unique
+  senhaHash     String
+  tipo          TipoUsuario @default(PASSAGEIRO)
+
+  emailVerificado    Boolean @default(false)
+  telefoneVerificado Boolean @default(false)
+  cnhVerificada      Boolean @default(false)
+  cnhNumero          String?
+  fotoPerfil         String?
+
+  mediaAvaliacao     Float   @default(5.0)
+  totalAvaliacoes    Int     @default(0)
+  totalCancelamentos Int     @default(0)
+
+  ativo          Boolean @default(true)
+  bloqueado      Boolean @default(false)
+  motivoBloqueio String?
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  veiculos            Veiculo[]
+  viagensCriadas      Viagem[]      @relation("MotoristaViagem")
+  solicitacoes        Solicitacao[] @relation("PassageiroSolicitacao")
+  mensagensEnviadas   Mensagem[]    @relation("RemetenteMensagem")
+  avaliacoesFeitas    Avaliacao[]   @relation("AvaliadorAvaliacao")
+  avaliacoesRecebidas Avaliacao[]   @relation("AvaliadoAvaliacao")
+  refreshTokens       RefreshToken[]
+  historico           Historico[]
+
+  @@map("usuarios")
+}
+
+enum TipoUsuario {
+  PASSAGEIRO
+  MOTORISTA
+  AMBOS
+}
+
+// ── VEÍCULOS ──────────────────────────────────────────────────────
+model Veiculo {
+  id          String  @id @default(uuid())
+  motoristaId String
+  motorista   Usuario @relation(fields: [motoristaId], references: [id])
+
+  modelo     String
+  marca      String
+  placa      String  @unique
+  cor        String
+  ano        Int
+  capacidade Int     @default(4)
+  ativo      Boolean @default(true)
+
+  criadoEm DateTime @default(now())
+
+  viagens Viagem[]
+
+  @@map("veiculos")
+}
+
+// ── VIAGENS ───────────────────────────────────────────────────────
+model Viagem {
+  id          String  @id @default(uuid())
+  motoristaId String
+  motorista   Usuario @relation("MotoristaViagem", fields: [motoristaId], references: [id])
+  veiculoId   String
+  veiculo     Veiculo @relation(fields: [veiculoId], references: [id])
+
+  origem      String
+  destino     String
+  latOrigem   Float?
+  lngOrigem   Float?
+  latDestino  Float?
+  lngDestino  Float?
+  distanciaKm Float?
+  duracaoMin  Int?
+
+  horarioSaida     DateTime
+  vagasTotal       Int
+  vagasDisponiveis Int
+  precoPorPessoa   Float
+  observacoes      String?
+
+  status StatusViagem @default(DISPONIVEL)
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  solicitacoes Solicitacao[]
+  avaliacoes   Avaliacao[]
+  historico    Historico[]
+
+  @@map("viagens")
+}
+
+enum StatusViagem {
+  DISPONIVEL
+  EM_ANDAMENTO
+  FINALIZADA
+  CANCELADA
+}
+
+// ── SOLICITAÇÕES ──────────────────────────────────────────────────
+model Solicitacao {
+  id           String  @id @default(uuid())
+  viagemId     String
+  viagem       Viagem  @relation(fields: [viagemId], references: [id])
+  passageiroId String
+  passageiro   Usuario @relation("PassageiroSolicitacao", fields: [passageiroId], references: [id])
+
+  pontoEmbarque String?
+  observacao    String?
+  status        StatusSolicitacao @default(PENDENTE)
+
+  solicitadoEm DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  mensagens Mensagem[]
+  pagamento Pagamento?
+
+  @@unique([viagemId, passageiroId])
+  @@map("solicitacoes")
+}
+
+enum StatusSolicitacao {
+  PENDENTE
+  ACEITA
+  RECUSADA
+  CANCELADA_PASSAGEIRO
+  CANCELADA_MOTORISTA
+}
+
+// ── MENSAGENS ─────────────────────────────────────────────────────
+model Mensagem {
+  id            String      @id @default(uuid())
+  solicitacaoId String
+  solicitacao   Solicitacao @relation(fields: [solicitacaoId], references: [id])
+  remetenteId   String
+  remetente     Usuario     @relation("RemetenteMensagem", fields: [remetenteId], references: [id])
+
+  conteudo  String
+  lida      Boolean  @default(false)
+  enviadaEm DateTime @default(now())
+
+  @@map("mensagens")
+}
+
+// ── AVALIAÇÕES ────────────────────────────────────────────────────
+model Avaliacao {
+  id          String  @id @default(uuid())
+  viagemId    String
+  viagem      Viagem  @relation(fields: [viagemId], references: [id])
+  avaliadorId String
+  avaliador   Usuario @relation("AvaliadorAvaliacao", fields: [avaliadorId], references: [id])
+  avaliadoId  String
+  avaliado    Usuario @relation("AvaliadoAvaliacao", fields: [avaliadoId], references: [id])
+
+  nota       Int
+  comentario String?
+  criadoEm  DateTime @default(now())
+
+  @@unique([viagemId, avaliadorId])
+  @@map("avaliacoes")
+}
+
+// ── PAGAMENTOS ────────────────────────────────────────────────────
+model Pagamento {
+  id            String      @id @default(uuid())
+  solicitacaoId String      @unique
+  solicitacao   Solicitacao @relation(fields: [solicitacaoId], references: [id])
+
+  valor             Float
+  taxaPlataforma    Float
+  valorMotorista    Float
+  metodo            MetodoPagamento @default(PIX)
+  status            StatusPagamento @default(PENDENTE)
+  referenciaExterna String?
+
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("pagamentos")
+}
+
+enum MetodoPagamento {
+  PIX
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  DINHEIRO
+}
+
+enum StatusPagamento {
+  PENDENTE
+  APROVADO
+  RECUSADO
+  ESTORNADO
+}
+
+// ── HISTÓRICO ─────────────────────────────────────────────────────
+model Historico {
+  id        String        @id @default(uuid())
+  viagemId  String
+  viagem    Viagem        @relation(fields: [viagemId], references: [id])
+  usuarioId String
+  usuario   Usuario       @relation(fields: [usuarioId], references: [id])
+  acao      AcaoHistorico
+  metadata  Json?
+
+  registradoEm DateTime @default(now())
+
+  @@map("historico")
+}
+
+enum AcaoHistorico {
+  VIAGEM_CRIADA
+  VIAGEM_INICIADA
+  VIAGEM_FINALIZADA
+  VIAGEM_CANCELADA
+  SOLICITACAO_ENVIADA
+  SOLICITACAO_ACEITA
+  SOLICITACAO_RECUSADA
+  SOLICITACAO_CANCELADA
+  PAGAMENTO_REALIZADO
+  AVALIACAO_REGISTRADA
+}
+
+// ── REFRESH TOKENS ────────────────────────────────────────────────
+model RefreshToken {
+  id        String   @id @default(uuid())
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  criadoEm  DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
