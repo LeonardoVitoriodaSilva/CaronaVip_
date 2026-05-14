@@ -1,0 +1,131 @@
+/* Trips.module.css */
+.pageHeader { margin-bottom: 24px; }
+.pageTitle { font-size: 26px; font-weight: 800; color: var(--navy); letter-spacing: -0.5px; }
+.pageSub { font-size: 14px; color: var(--text3); margin-top: 4px; }
+
+.card { background: white; border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.fgRelative { position: relative; }
+.label { font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 6px; }
+.input {
+  width: 100%;
+  background: var(--beige);
+  border: 1.5px solid var(--beige3);
+  border-radius: 50px;
+  padding: 11px 18px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input:focus { border-color: var(--orange); background: white; }
+.input::placeholder { color: var(--text3); }
+select.input { appearance: none; cursor: pointer; }
+textarea.input { border-radius: 12px; resize: vertical; }
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: white;
+  border: 1.5px solid rgba(224,123,26,0.25);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.dropItem {
+  padding: 10px 16px;
+  font-size: 13.5px;
+  color: var(--navy);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.1s;
+}
+.dropItem:hover { background: rgba(224,123,26,0.08); color: var(--orange); }
+
+.btnPrimary {
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  box-shadow: 0 2px 12px rgba(224,123,26,0.35);
+}
+.btnPrimary:hover { background: var(--orange2); }
+.btnPrimary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.resultHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  font-size: 14px;
+  color: var(--text2);
+}
+.empty { text-align: center; padding: 48px; color: var(--text3); }
+.empty p { margin-top: 12px; font-size: 14px; }
+
+.tripCard {
+  background: white;
+  border: 2px solid var(--beige2);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.tripCard:hover { border-color: var(--orange); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+.tripRoute { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.tripCity { font-size: 18px; font-weight: 800; color: var(--navy); }
+.tripArrow { color: var(--orange); font-size: 18px; font-weight: 700; }
+.tripMeta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--text2); margin-bottom: 14px; }
+.tripFooter { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid var(--beige2); }
+.tripPrice { font-size: 22px; font-weight: 800; color: var(--navy); }
+.tripDriver { display: flex; align-items: center; gap: 10px; }
+.driverAv {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--orange), #C96A0E);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+.btnSolicitar {
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btnSolicitar:hover { background: var(--orange2); }
+
+/* Status badges */
+.badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.bGreen { background: rgba(46,204,113,0.12); color: #1A8A4A; }
+.bRed { background: rgba(231,76,60,0.12); color: var(--red); }
+.bOrange { background: rgba(224,123,26,0.12); color: var(--orange); }
+.bGray { background: var(--beige2); color: var(--text3); }
+
+.progress { height: 6px; background: var(--beige2); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.progressFill { height: 100%; background: linear-gradient(90deg, var(--orange), var(--orange2)); border-radius: 3px; }
+
+@media (max-width: 768px) {
+  .formGrid { grid-template-columns: 1fr; }
+}
